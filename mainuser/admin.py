@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser
+from .models import *
 
 class CustomUserAdmin(UserAdmin):
     form = CustomUserChangeForm
@@ -14,11 +14,11 @@ class CustomUserAdmin(UserAdmin):
 
     model = CustomUser
 
-    list_display = ('id','username', 'email', 'role', 'is_deleted', 'is_active',
+    list_display = ('id','username', 'email', 'is_deleted', 'is_active',
                     'is_staff', 'is_superuser', 'last_login',)
     list_filter = ('is_active', 'is_staff', 'is_superuser')
     fieldsets = (
-        (None, {'fields': ('username', 'email', 'role', 'password', 'is_deleted')}),
+        (None, {'fields': ('username', 'email', 'password', 'is_deleted')}),
         ('Permissions', {'fields': ('is_staff', 'is_active',
          'is_superuser', 'groups', 'user_permissions')}),
         ('Dates', {'fields': ('last_login', 'date_joined')})
@@ -26,10 +26,13 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'role', 'password1', 'password2', 'is_staff', 'is_active')}
+            'fields': ('username', 'email', 'password1', 'password2', 'is_staff', 'is_active')}
          ),
     )
     search_fields = ('username',)
     ordering = ('username',)
 
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Role)
+admin.site.register(Designation)
+admin.site.register(DesignationHead)

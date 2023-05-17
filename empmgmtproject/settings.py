@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +41,12 @@ INSTALLED_APPS = [
 
     # myapps
     "mainuser",
+
+    # django rest framework
+    'rest_framework',
+
+    # simple jwt
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +64,7 @@ ROOT_URLCONF = "empmgmtproject.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates") ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -127,3 +134,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # customer
 AUTH_USER_MODEL = "mainuser.CustomUser"
+
+
+# simple jwt
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1)
+}
