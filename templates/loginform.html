@@ -74,7 +74,8 @@
 </style>
 
 <body>
-    <form action="" method="POST">
+    <form method="POST">
+        <p>VISITS: {{num_visits}}</p>
         {{user}}
         {% csrf_token %}
         <div class="head-text">LOGIN PAGE</div>

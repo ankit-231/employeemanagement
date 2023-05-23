@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render, redirect
 
 # Create your views here.
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 from .serializers import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import JSONParser
+from empmgmtproject import settings
 
 
 def login_view(request):
@@ -27,7 +29,34 @@ def login_view(request):
             return HttpResponse("<h1>invalid username or password</h1>")
 
     form = AuthenticationForm
-    return render(request, "loginform.html", {"form": form})
+    num_visits = request.session.get('num_visits')
+    return render(request, "loginform.html", {"form": form, "num_visits": num_visits})
+
+def set_cookie(response, key, value, days_expire=7):
+    if days_expire is None:
+        max_age = 365 * 24 * 60 * 60  # one year
+    else:
+        max_age = days_expire * 24 * 60 * 60
+    expires = datetime.datetime.strftime(
+        datetime.datetime.utcnow() + datetime.timedelta(seconds=max_age),
+        "%a, %d-%b-%Y %H:%M:%S GMT",
+    )
+    response.set_cookie(
+        key,
+        value,
+        max_age=max_age,
+        expires=expires,
+        domain=settings.SESSION_COOKIE_DOMAIN,
+        secure=settings.SESSION_COOKIE_SECURE or None,
+    )
+
+def home_view(request):
+    if request.method == "GET":
+        # Number of visits to this view, as counted in the session variable.
+        num_visits = request.session.get('num_visits', 0)
+        request.session['num_visits'] = num_visits + 1
+
+    return render(request, "home.html", {"num_visits": num_visits})
 
 @csrf_exempt
 @api_view(["GET"])
@@ -112,6 +141,48 @@ def edit_user(request):
         return JsonResponse(serializer.errors, safe=False, status=400)
 
 @csrf_exempt
+@api_view(["DELETE"])
+@permission_classes((IsAuthenticated,))
+def delete_user(request):
+    print(request.user)
+    print(request)
+    data = JSONParser().parse(request)
+    if "username" not in data:
+        return JsonResponse( {"error": "provide username"},status=404)
+    
+    try:
+        user = CustomUser.objects.get(username=data["username"])
+    except CustomUser.DoesNotExist:
+        return JsonResponse( {"error": "user does not exist"},status=404)
+    
+    serializer = UserSerializerPost(user, data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        if "role" in data:
+            if data['role'] == 0:
+                user.role_set.clear()
+            else:
+                try:
+                    role = Role.objects.get(id=data["role"])
+                except Role.DoesNotExist:
+                    return JsonResponse({'error': "Role does not exist"}, safe=False, status=400)
+                user.role_set.add(role)
+                user.save()
+                for i in user.role_set.all():
+                    print(i.name)
+        if "designation" in data:
+            try:
+                designation = Designation.objects.get(id=data["designation"])
+            except Designation.DoesNotExist:
+                return JsonResponse({'error': "Designation does not exist"}, safe=False, status=400)
+            user.designation = designation
+            user.save()
+            print(user.designation)
+        return JsonResponse(serializer.data, safe=False, status=200)
+    else:
+        return JsonResponse(serializer.errors, safe=False, status=400)
+
+@csrf_exempt
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_role(request):
@@ -152,6 +223,19 @@ def edit_role(request, pk):
         return JsonResponse(serializer.data, safe=False, status=200)
     else:
         return JsonResponse(serializer.errors, safe=False, status=400)
+
+@csrf_exempt
+@api_view(["DELETE"])
+@permission_classes((IsAuthenticated,))
+def delete_role(request, pk):
+    print(request.user)
+    print(request)
+    try:
+        role = Role.objects.get(pk=pk)
+    except Role.DoesNotExist:
+        return JsonResponse( {"error": "role does not exist"},status=404)
+    role.delete()
+    return JsonResponse({"success": f"{role.name} successfully deleted"}, safe=False, status=200)
 
 @csrf_exempt
 @api_view(["GET"])

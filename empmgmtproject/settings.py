@@ -21,7 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-j0%!94wsn(c#q@x$s87gui!(9yk8&@_rjm7dgfmlizk+3hs%lt"
+
+
+# used environment variable for storing secret key
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
+
+SECRET_KEY = os.environ['SECRET_KEY']
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -148,3 +156,7 @@ from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1)
 }
+
+# cookie
+SESSION_COOKIE_DOMAIN = "http://127.0.0.1:8000/"
+SESSION_COOKIE_SECURE = True

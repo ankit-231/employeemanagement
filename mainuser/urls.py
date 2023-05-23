@@ -5,6 +5,8 @@ urlpatterns = [
     path('login/', views.login_view, name='login_view'),
     path('logout/', views.logout_view, name='logout_view'),
 
+    path('home/', views.home_view, name='home_view'),
+
     path('get_user/', views.get_user, name='get_user'),
     path('check/', views.check, name='check'),
     path('post_user/', views.post_user, name='post_user'),
@@ -13,6 +15,7 @@ urlpatterns = [
     path('get_role/', views.get_role, name='get_role'),
     path('post_role/', views.post_role, name='post_role'),
     path('edit_role/<int:pk>', views.edit_role, name='edit_role'),
+    path('delete_role/<int:pk>', views.delete_role, name='delete_role'),
     
     path('get_designation/', views.get_designation, name='get_designation'),
     path('post_designation/', views.post_designation, name='post_designation'),
